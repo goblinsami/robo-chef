@@ -112,7 +112,7 @@ export default defineComponent({
     const OPEN_API_KEY = process.env.VUE_APP_OPEN_API_KEY;
     const API_URL = "https://api.openai.com/v1/completions";
     const test = JSON.parse(
-      '{ "title": "Ensalada de Tomate, Anchoa y Manicomio", "ingredients": [ "Tomate", "Anchoa", "Lechuga", "Aceite de Oliva", "Vinagre de Manzana", "Sal", "Pimienta" ], "prep": [ "Cortar los tomates en rodajas finas.", "Cortar la lechuga en juliana.", "En un bol, mezclar los ingredientes cortados con las anchoas.", "Añadir aceite de oliva, vinagre de manzana, sal y pimienta al gusto.", "Mezclar bien los ingredientes.", "Servir la ensalada en un plato." ] }'
+      '{ "title": "Ensalada de Tomate, Anchoa y Manicomio", "ingredients": [ "Tomate", "Anchoa", "Lechuga", "Aceite de Oliva", "Vinagre de Manzana", "Sal", "Pimienta" ], "prep": [ "Cortar los tomates en rodajas finas.", "Cortar la lechuga en juliana.", "En un bol, mezclar los ingredientes cortados con las anchoas.", "Añadir aceite de oliva, vinagre de manszana, sal y pimienta al gusto.", "Mezclar bien los ingredientes.", "Servir la ensalada en un plato." ] }'
     );
     const store = useStore();
 
