@@ -8,18 +8,24 @@
     <!-- SELECT -->
     <article class="q-py-md row justify-center">
       <div class="input-card col-12 q-px-md">
-        <q-select
-          outlined
-          v-model="selected"
-          :options="options"
-          label="Ingredientes"
-          hint="Introduce ingredientes"
-          multiple
-        />
+        <div class="q-pa-md">
+          <q-select
+            outlined
+            v-model="selected"
+            use-input
+            use-chips
+            multiple
+            input-debounce="0"
+            @new-value="createValue"
+            :options="filterOptions"
+            @filter="filterFn"
+            label="Añade ingredientes"
+          />
+        </div>
       </div>
     </article>
     <!-- CHIPS -->
-    <article class="q-px-lg row justify-center">
+    <!--     <article class="q-px-lg row justify-center">
       <q-chip
         v-for="(ing, index) in selected"
         removable
@@ -30,11 +36,11 @@
       >
         {{ ing }}
       </q-chip>
-    </article>
+    </article> -->
     <!-- SUBMIT -->
     <article class="q-px-lg row justify-center q-py-md q-my-sm">
       <q-btn
-        color="primary"
+        color="warning"
         label="Submit"
         @click="submitInput()"
         :loading="loading"
@@ -61,7 +67,7 @@
       </ul>
     </article>
     <article class="input-card" style="margin: auto">
-      <q-list bordered class="rounded-borders">
+      <q-list bordered separator class="rounded-borders">
         <q-expansion-item v-for="(r, index) in getRecipes" :key="index">
           <template v-slot:header>
             <q-item-section avatar>
@@ -69,14 +75,6 @@
             </q-item-section>
 
             <q-item-section> {{ r.title }} </q-item-section>
-
-            <!--             <q-item-section side>
-              <div class="row items-center">
-                <q-icon name="star" color="red" size="24px" />
-                <q-icon name="star" color="red" size="24px" />
-                <q-icon name="star" color="red" size="24px" />
-              </div>
-            </q-item-section> -->
           </template>
 
           <q-card>
@@ -102,8 +100,35 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
+
+const stringOptions = [
+  "Agua",
+  "Tu carita bonita",
+  "Tu lindo trasero",
+  "Tomate",
+  "Anchoa",
+  "Lechuga",
+  "Manzana",
+  "Ron",
+  "Calamar",
+  "Carne de bebé",
+  "Cristales rotos",
+  "Tornillos",
+  "Cigarros",
+  "Pan",
+  "Miel",
+  "el espíritu de Galicia",
+  "tu triste infancia",
+  "cuchillo de carnicero",
+  "esperanza",
+  "Barcelona",
+  "Entrecot",
+  "Pimienta",
+  "Nata líquida",
+  "queso Roquefort",
+];
 
 export default defineComponent({
   name: "MainLayout",
@@ -115,9 +140,17 @@ export default defineComponent({
       '{ "title": "Ensalada de Tonmate, Anchoa y Manicomio", "ingredients": [ "Tomate", "Anchoa", "Lechuga", "Aceite de Oliva", "Vinagre de Manzana", "Sal", "Pimienta" ], "prep": [ "Cortar los tomates en rodajas finas.", "Cortar la lechuga en juliana.", "En un bol, mezclar los ingredientes cortados con las anchoas.", "Añadir aceite de oliva, vinagre de manszanna, sal y pimienta al gusto.", "Mezclar bien los ingredientes.", "Servir la ensalada en un plato." ] }'
     );
     const store = useStore();
+    const getIngredients = computed(() => store.state.recipes["ingredients"]);
 
     const getRecipes = computed(() => store.state.recipes["recipes"]);
-
+    /*     const reverseRecipes = getRecipes.value.reverse(); */
+    const filterOptions = ref(stringOptions);
+    onMounted(() => {
+      console.log(getIngredients, getIngredients.value.length);
+      if (!getIngredients.value.length) {
+        store.dispatch("recipes/action_setIngredients", stringOptions);
+      }
+    });
     return {
       text: ref(""),
       selected: ref([]),
@@ -125,42 +158,58 @@ export default defineComponent({
       response: ref(null),
       loading: ref(false),
       getRecipes,
-      test3: ref(test),
+      getIngredients,
+      /*       reverseRecipes,
+       */ test3: ref(test),
+      filterOptions,
+      /*  options: ref(optionsOriginal), */
 
-      options: [
-        "Agua",
-        "Tu carita bonita",
-        "Tu lindo trasero",
-        "Tomate",
-        "Anchoa",
-        "Lechuga",
-        "Manzana",
-        "Ron",
-        "Calamar",
-        "Carne de bebé",
-        "Cristales rotos",
-        "Tornillos",
-        "Cigarros",
-        "Pan",
-        "Miel",
-        "el espíritu de Galicia",
-        "tu triste infancia",
-        "cuchillo de carnicero",
-        "esperanza",
-        "Barcelona",
-        "Entrecot",
-        "Pimienta",
-        "Nata líquida",
-        "queso Roquefort",
-      ],
+      createValue(val, done) {
+        // Calling done(var) when new-value-mode is not set or "add", or done(var, "add") adds "var" content to the model
+        // and it resets the input textbox to empty string
+        // ----
+        // Calling done(var) when new-value-mode is "add-unique", or done(var, "add-unique") adds "var" content to the model
+        // only if is not already set
+        // and it resets the input textbox to empty string
+        // ----
+        // Calling done(var) when new-value-mode is "toggle", or done(var, "toggle") toggles the model with "var" content
+        // (adds to model if not already in the model, removes from model if already has it)
+        // and it resets the input textbox to empty string
+        // ----
+        // If "var" content is undefined/null, then it doesn't tampers with the model
+        // and only resets the input textbox to empty string
 
+        if (val.length > 0) {
+          if (!stringOptions.includes(val)) {
+            stringOptions.push(val);
+            store.dispatch("recipes/action_addIngredient", val);
+          }
+          done(val, "toggle");
+        }
+      },
+
+      filterFn(val, update) {
+        update(() => {
+          if (val === "") {
+            filterOptions.value = getIngredients.value;
+          } else {
+            const needle = val.toLowerCase();
+            filterOptions.value = getIngredients.value.filter(
+              (v) => v.toLowerCase().indexOf(needle) > -1
+            );
+          }
+        });
+      },
       removeIngredient(ing, index) {
         this.selected.splice(index, 1);
       },
       test2() {
-        console.log(getRecipes);
-        console.log(this.test3);
-        store.dispatch("recipes/action_setRecipes", this.test3);
+        console.log(getRecipes.value);
+        console.log(getIngredients.value);
+
+        /*   store.dispatch("recipes/action_setIngredients", stringOptions); */
+        /*         console.log(this.test3);
+         */
       },
       submitInput() {
         console.log(this.selected);
@@ -222,5 +271,9 @@ export default defineComponent({
 
 .input-card {
   max-width: 500px;
+}
+
+.q-chip {
+  background-color: red !important;
 }
 </style>

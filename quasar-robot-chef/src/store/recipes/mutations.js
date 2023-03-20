@@ -1,3 +1,11 @@
 export function SET_RECIPES(state, recipe) {
-  state.recipes.push(recipe);
+  state.recipes.unshift(recipe);
+}
+
+export function SET_INGREDIENTS(state, ingredients) {
+  state.ingredients = ingredients;
+}
+
+export function ADD_INGREDIENT(state, ingredient) {
+  state.ingredients.push(ingredient);
 }
