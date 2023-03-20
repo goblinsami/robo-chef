@@ -20,6 +20,7 @@
             :options="filterOptions"
             @filter="filterFn"
             label="Añade ingredientes"
+            type="text"
           />
         </div>
       </div>
