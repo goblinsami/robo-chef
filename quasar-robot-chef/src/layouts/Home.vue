@@ -10,6 +10,7 @@
       <div class="input-card col-12 q-px-md">
         <div class="q-pa-md">
           <q-select
+            ref="select"
             outlined
             v-model="selected"
             use-input
@@ -21,7 +22,19 @@
             @filter="filterFn"
             label="Añade ingredientes"
             type="text"
-          />
+            @keyup.enter="createValue"
+          >
+            <template #before-options>
+              <q-btn
+                class="col-12"
+                color="grey"
+                label="ok"
+                v-close-popup
+                style="width: 100%"
+                flat
+              />
+            </template>
+          </q-select>
         </div>
       </div>
     </article>
@@ -135,6 +148,8 @@ export default defineComponent({
   name: "MainLayout",
 
   setup() {
+    const select = ref(null);
+
     const OPEN_API_KEY = process.env.VUE_APP_OPEN_API_KEY;
     const API_URL = "https://api.openai.com/v1/completions";
     const test = JSON.parse(
@@ -146,6 +161,11 @@ export default defineComponent({
     const getRecipes = computed(() => store.state.recipes["recipes"]);
     /*     const reverseRecipes = getRecipes.value.reverse(); */
     const filterOptions = ref(stringOptions);
+
+    onMounted(() => {
+      // Logs: `Headline`
+      console.log(select.value.focus());
+    });
     onMounted(() => {
       console.log(getIngredients, getIngredients.value.length);
       if (!getIngredients.value.length) {
@@ -159,11 +179,15 @@ export default defineComponent({
       response: ref(null),
       loading: ref(false),
       getRecipes,
+      select,
       getIngredients,
-      /*       reverseRecipes,
-       */ test3: ref(test),
+      test3: ref(test),
       filterOptions,
       /*  options: ref(optionsOriginal), */
+
+      test4() {
+        console.log(select.value.hidePopup());
+      },
 
       createValue(val, done) {
         // Calling done(var) when new-value-mode is not set or "add", or done(var, "add") adds "var" content to the model
@@ -254,6 +278,7 @@ export default defineComponent({
           store.dispatch("recipes/action_setRecipes", this.response);
         } catch (error) {
           alert("Something Went Wrong try again");
+          this.requestAPI();
         }
         console.log(this.response);
       },
