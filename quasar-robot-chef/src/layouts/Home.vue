@@ -445,7 +445,7 @@ export default defineComponent({
           store.dispatch("recipes/action_setRecipes", this.response);
         } catch (error) {
           alert("Something Went Wrong try again");
-          this.requestAPI();
+         /*  this.requestAPI(); */
         }
         console.log(this.response);
       },
