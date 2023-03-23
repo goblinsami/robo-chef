@@ -82,18 +82,6 @@
       </div>
     </article>
     <!-- CHIPS -->
-    <!--     <article class="q-px-lg row justify-center">
-      <q-chip
-        v-for="(ing, index) in selected"
-        removable
-        @remove="removeIngredient(index)"
-        color="warning"
-        text-color="white"
-        :key="ing"
-      >
-        {{ ing }}
-      </q-chip>
-    </article> -->
     <!-- SUBMIT -->
     <article class="q-px-lg row justify-center q-py-md q-my-sm">
       <q-btn
@@ -102,17 +90,12 @@
         @click="submitInput()"
         :loading="loading"
       />
-<!--       <q-btn
-        color="warning"
-        label="Submit"
-        @click="printThis()"
-        :loading="loading"
-      /> -->
     </article>
     <!-- LIST -->
     <article
       class="flex column items-center input-card q-px-md"
       style="margin: auto"
+      ref="main"
       v-if="response"
     >
       <h1 class="col-12 text-h5">{{ response["title"] }}</h1>
@@ -128,6 +111,34 @@
           {{ ing }}
         </li>
       </ul>
+      <div class="row justify-center q-pb-md q-pl-md">
+        <div id="label" class="col-12 row items-center" v-if="label">
+          <div class="text-grey">Hecho con RoboChef</div>
+          <q-icon name="smart_toy" size="sm" class="q-pl-sm" color="grey" />
+        </div>
+
+        <div class="col-12" id="btn-section">
+          <q-btn
+            round
+            color="blue-4"
+            icon="share"
+            @click="shareTwitter(placeholder)"
+          />
+          <q-btn
+            round
+            color="light-green-4 q-mx-sm"
+            icon="share"
+            @click="shareWhatsApp(placeholder)"
+          />
+          <q-btn
+            round
+            color="grey-5"
+            icon="content_copy"
+            @click="shareClipboard(placeholder, 1)"
+            ref="btn"
+          />
+        </div>
+      </div>
     </article>
     <article class="input-card" style="margin: auto">
       <q-list bordered separator class="rounded-borders">
@@ -141,7 +152,7 @@
               <q-avatar icon="kitchen" color="primary" text-color="white" />
             </q-item-section>
 
-            <q-item-section> {{ r.title }} </q-item-section>
+            <q-item-section> <b>{{ r.title }}</b> </q-item-section>
           </template>
 
           <q-card>
@@ -162,22 +173,32 @@
             <div class="row justify-center q-pb-md q-pl-md">
               <div id="label" class="col-12 row items-center" v-if="label">
                 <div class="text-grey">Hecho con RoboChef</div>
-                <q-icon name="smart_toy" size="sm" class="q-pl-sm" color="grey" />
+                <q-icon
+                  name="smart_toy"
+                  size="sm"
+                  class="q-pl-sm"
+                  color="grey"
+                />
               </div>
 
               <div class="col-12" id="btn-section">
-                <q-btn round color="blue-4" icon="share" @click="share(r)" />
+                <q-btn
+                  round
+                  color="blue-4"
+                  icon="share"
+                  @click="shareTwitter(r)"
+                />
                 <q-btn
                   round
                   color="light-green-4 q-mx-sm"
                   icon="share"
-                  @click="share2(r)"
+                  @click="shareWhatsApp(r)"
                 />
                 <q-btn
                   round
                   color="grey-5"
                   icon="content_copy"
-                  @click="share3(r, index)"
+                  @click="shareClipboard(index)"
                   ref="btn"
                 />
               </div>
@@ -186,6 +207,10 @@
         </q-expansion-item>
       </q-list>
     </article>
+    <footer  class="q-pa-sm">
+<small>Información generada por OPEN AI. RoboChef tiene fines gastronómicos y humorísticos.
+  RoboChef no se hace responsable del resultado de las recetas ni de los ingredientes introducidos. Sugerencias: ideas de recetas con ingredientes de la nevera, recetas de agradecimiento a alguien especial o una receta graciosa de caca para tu amigo. Se recomienda seguir el sentido común.</small>
+    </footer>
   </section>
 </template>
 
@@ -204,20 +229,12 @@ const stringOptions = [
   "Manzana",
   "Ron",
   "Calamar",
-  "Carne de bebé",
   "Cristales rotos",
   "Tornillos",
   "Cigarros",
-  "Pan",
-  "Miel",
-  "el espíritu de Galicia",
-  "tu triste infancia",
-  "cuchillo de carnicero",
-  "esperanza",
   "Barcelona",
   "Entrecot",
   "Pimienta",
-  "Nata líquida",
   "queso Roquefort",
 ];
 
@@ -230,6 +247,22 @@ export default defineComponent({
     const qSelect = ref(null);
     const customSelect = ref(null);
     const printcontent = ref(null);
+    const placeholder = ref({
+      title: "Estofado de Vagina",
+      ingredients: [
+        "vagina",
+        "salchicha",
+        "trasero jugoso",
+        "cebolla",
+        "Tomate",
+      ],
+      prep: [
+        "Cortar la vagina, la salchicha, el trasero jugoso, la cebolla y la tomate.",
+        "Freír todos los ingredientes en una sartén.",
+        "Añadir un vaso de agua y una cucharadita de sal.",
+        "Dejar hervir a fuego lento durante 20 minutos.",
+      ],
+    });
 
     const courseDiv = ref(null);
 
@@ -258,6 +291,7 @@ export default defineComponent({
     return {
       courseDiv,
       label,
+      placeholder,
       text: ref(""),
       selected: ref([]),
       showList: ref(false),
@@ -287,7 +321,7 @@ export default defineComponent({
       },
       manuallyAddIngredient() {
         console.log(getIngredients.value.length);
-        if (this.inputValue.length && getIngredients.value.length < 20) {
+        if (this.inputValue.length && getIngredients.value.length < 50) {
           this.$refs.qSelect.add(this.inputValue);
           store.dispatch("recipes/action_addIngredient", this.inputValue);
           this.$refs.qSelect.updateInputValue("");
@@ -307,8 +341,13 @@ export default defineComponent({
 
         console.log(this.$refs.printcontent);
       },
-      async share3(recipe, index) {
-        const el = this.$refs.printcontent[index].$el;
+      async shareClipboard(index, opt) {
+        let el = null;
+        if (opt === 1) {
+          el = this.$refs.main;
+        } else {
+          el = this.$refs.printcontent[index].$el;
+        }
         console.log("printing..", this.$refs.printcontent[0].$parent.$parent);
 
         const options = {
@@ -329,7 +368,7 @@ export default defineComponent({
 
         console.log("done");
       },
-      share(recipe) {
+      shareTwitter(recipe) {
         console.log(recipe["prep"][0]);
         console.log(recipe["ingredients"].join("-"));
         let title = `He hecho' ${recipe.title}' con robochef\n`;
@@ -351,7 +390,7 @@ export default defineComponent({
             encodeURIComponent(msg.substring(0, 250))
         );
       },
-      share2(recipe) {
+      shareWhatsApp(recipe) {
         let title = `He hecho *${recipe.title}* con robochef`;
         let ingredients = recipe["ingredients"]
           .map((el) => `\u2022${el}`)
@@ -370,7 +409,7 @@ export default defineComponent({
         window.open(`https://wa.me/?text=${message}`);
       },
       createValue(val, done) {
-        if (val.length > 0 && getIngredients.value.length < 20) {
+        if (val.length > 0 && getIngredients.value.length < 50) {
           if (!stringOptions.includes(val)) {
             stringOptions.push(val);
             store.dispatch("recipes/action_addIngredient", val);
@@ -395,19 +434,22 @@ export default defineComponent({
         this.selected.splice(index, 1);
       },
       test2() {
-        console.log(getRecipes.value);
-        console.log(getIngredients.value);
-
-        /*   store.dispatch("recipes/action_setIngredients", stringOptions); */
-        /*         console.log(this.test3);
-         */
+        let string3 =
+          '\n\n{\n    "title": "Chorizo con Alubias",\n    "ingredients": ["Caldo", "Chorizo", "Alubias"],\n    "prep": [\n        "Pon el caldo a hervir en una olla grande.",\n        "Añade el chorizo y las alubias a la olla y cocina a fuego medio durante 15 minutos.",\n        "Sirve y disfruta."\n    ]\n}';
+        let string2 =
+          '\'\n\n{\n    "title": "Pollo al Ají Amarillo con Choclo",\n    "ingredients": [\n        "1/2 kg de pollo",\n        "2 choclos",\n        "3 cucharadas de ají amarillo",\n        "1/2 taza de caldo de pollo",\n        "3 cucharadas de aceite de oliva",\n        "1 cebolla",\n        "4 dientes de ajo",\n        "1 cucharada de jengibre rallado",\n        "1/2 cucharada de comino en polvo",\n        "1 cucharadita de sal"\n    ],\n    "prep": [\n        "Corta el pollo en trozos pequeños.",\n        "Pon el aceite a calentar en una sartén grande.",\n        "Añade la cebolla, el ajo y el jengibre y sofríelos hasta que estén dorados.",\n        "Agrega los trozos de pollo y cocina hasta';
+        let string =
+          '"\n\n```\n{\n    "title": "Cazuela de flauta, dánet, bicicleta y pimienta",\n    "ingredients": ["flauta", "dánet", "bicicleta", "pimienta", "gilda"],\n    "prep": [\n        "Picar la flauta y el dánet en trozos pequeños.",\n        "Limar la bicicleta.",\n        "Picar la pimienta y la gilda en trozos pequeños.",\n        "Mezclar la flauta, el dánet, la bicicleta, la pimienta y la gilda en una cazuela.",\n        "Calentar la cazuela a fuego medio hasta que los ingredientes se hayan cocinado por completo."\n    ]\n}\n```"';
+        console.log(JSON.parse(string3));
       },
       /* API */
       submitInput() {
         console.log(this.selected);
-        this.showList = true;
-        this.response = null;
-        this.requestAPI();
+        if (this.selected.length) {
+          this.showList = true;
+          this.response = null;
+          this.requestAPI();
+        }
       },
       async requestAPI() {
         const ingredients = this.selected;
@@ -415,7 +457,7 @@ export default defineComponent({
           {
             role: "user",
             content:
-              "Eres un cocinero robot experto. Recibes un array de ingredientes :['Tomate', 'Pimiento', 'Carne de caballo'] y das una receta directamente. Añade los ingredientes que quieras. No das explicaciones, no saludas, no te despides, solo das la receta directamente. Divide cada paso de la preparación. No muestres otra cosa que el título de la receta, ingredientes y preparación en forma de objeto JSON. ",
+              "Eres un cocinero robot experto. Recibes un array de ingredientes :['Tomate', 'Pimiento', 'Carne de caballo'] y das una receta directamente. Añade los ingredientes que quieras. No das explicaciones, no saludas, no te despides, solo das la receta directamente. Divide cada paso de la preparación. No muestres otra cosa que el título de la receta, ingredientes y preparación en forma de objeto JSON sin saltos de línea ni espacios. ",
           },
         ];
         this.loading = true;
@@ -428,7 +470,7 @@ export default defineComponent({
           },
           body: JSON.stringify({
             model: "text-davinci-003",
-            prompt: `Eres un cocinero robot experto. Recibes un array de ingredientes :${ingredients} y das una receta directamente. Añade los ingredientes que quieras. No das explicaciones, no saludas, no te despides, solo das la receta directamente. Divide cada paso de la preparación. No muestres otra cosa que el título de la receta, ingredientes y preparación en forma de objeto JSON completo y válido, cuyas propiedades se llaman title, ingredients y prep.`,
+            prompt: `Eres un cocinero robot experto. Recibes un array de ingredientes :${ingredients} y das una receta directamente. Añade los ingredientes que quieras. No das explicaciones, no saludas, no te despides, solo das la receta directamente. Divide cada paso de la preparación, mínimo 4 pasos distintos sin mostrar el número. Menciona cada ingrediente. No muestres otra cosa que el título de la receta, ingredientes y preparación en forma de objeto JSON completo y válido, cuyas propiedades se llaman "title", "ingredients" y "prep", siempre entre comillas. No muestres espacios ni saltos de linea.`,
             temperature: 0.7,
             max_tokens: 256,
             top_p: 1,
@@ -445,7 +487,7 @@ export default defineComponent({
           store.dispatch("recipes/action_setRecipes", this.response);
         } catch (error) {
           alert("Something Went Wrong try again");
-         /*  this.requestAPI(); */
+          /*  this.requestAPI(); */
         }
         console.log(this.response);
       },
