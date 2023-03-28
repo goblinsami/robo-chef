@@ -2,7 +2,7 @@
   <section>
     <!-- HEADER -->
     <header class="container row items-center justify-center">
-      <h5>Robo Chef</h5>
+      <h5>Kitchen Genius</h5>
       <q-icon name="smart_toy" size="md" class="q-pl-sm" />
     </header>
     <!-- SELECT -->
@@ -86,9 +86,10 @@
     <article class="q-px-lg row justify-center q-py-md q-my-sm">
       <q-btn
         color="warning"
-        label="Submit"
         @click="submitInput()"
         :loading="loading"
+        icon="local_pizza"
+        size="lg"
       />
     </article>
     <!-- LIST -->
@@ -113,7 +114,7 @@
       </ul>
       <div class="row justify-center q-pb-md q-pl-md">
         <div id="label" class="col-12 row items-center" v-if="label">
-          <div class="text-grey">Hecho con RoboChef</div>
+          <div class="text-grey">Hecho con Kitchen Genius</div>
           <q-icon name="smart_toy" size="sm" class="q-pl-sm" color="grey" />
         </div>
 
@@ -152,7 +153,9 @@
               <q-avatar icon="kitchen" color="primary" text-color="white" />
             </q-item-section>
 
-            <q-item-section> <b>{{ r.title }}</b> </q-item-section>
+            <q-item-section>
+              <b>{{ r.title }}</b>
+            </q-item-section>
           </template>
 
           <q-card>
@@ -170,9 +173,9 @@
                 </li>
               </ul>
             </q-card-section>
-            <div class="row justify-center q-pb-md q-pl-md">
+            <div class="row justify-center q-pa-md">
               <div id="label" class="col-12 row items-center" v-if="label">
-                <div class="text-grey">Hecho con RoboChef</div>
+                <div class="text-grey">Hecho con Kitchen Genius</div>
                 <q-icon
                   name="smart_toy"
                   size="sm"
@@ -181,35 +184,63 @@
                 />
               </div>
 
-              <div class="col-12" id="btn-section">
-                <q-btn
-                  round
-                  color="blue-4"
-                  icon="share"
-                  @click="shareTwitter(r)"
-                />
-                <q-btn
-                  round
-                  color="light-green-4 q-mx-sm"
-                  icon="share"
-                  @click="shareWhatsApp(r)"
-                />
-                <q-btn
-                  round
-                  color="grey-5"
-                  icon="content_copy"
-                  @click="shareClipboard(index)"
-                  ref="btn"
-                />
+              <div class="col-12 row" id="btn-section">
+                <div class="col-10">
+                  <q-btn
+                    round
+                    color="blue-4"
+                    icon="share"
+                    @click="shareTwitter(r)"
+                  />
+                  <q-btn
+                    round
+                    color="light-green-4 q-mx-sm"
+                    icon="share"
+                    @click="shareWhatsApp(r)"
+                  />
+                  <q-btn
+                    round
+                    color="grey-5"
+                    icon="content_copy"
+                    @click="shareClipboard(index)"
+                    ref="btn"
+                  />
+                </div>
+                <div class="col-2">
+                  <q-btn class="" round @click="icon = true" icon="delete" />
+                  <q-dialog v-model="icon">
+                    <q-card>
+                      <q-card-section class="row items-center q-pb-none">
+                        <div class="text-h6">¿Eliminar Receta?</div>
+                        <q-space />
+                        <q-btn icon="close" flat round dense v-close-popup />
+                      </q-card-section>
+                      <q-card-section class="row items-center">
+                        <q-space />
+                        <q-btn
+                          class=""
+                          label="ok"
+                          @click="deleteRecipe(r, index), (icon = false)"
+                        />
+                      </q-card-section>
+                    </q-card>
+                  </q-dialog>
+                </div>
               </div>
             </div>
           </q-card>
         </q-expansion-item>
       </q-list>
     </article>
-    <footer  class="q-pa-sm">
-<small>Información generada por OPEN AI. RoboChef tiene fines gastronómicos y humorísticos.
-  RoboChef no se hace responsable del resultado de las recetas ni de los ingredientes introducidos. Sugerencias: ideas de recetas con ingredientes de la nevera, recetas de agradecimiento a alguien especial o una receta graciosa de caca para tu amigo. Se recomienda seguir el sentido común.</small>
+    <footer class="q-pa-sm input-card" style="margin: auto">
+      <small
+        >Información generada por OPEN AI. Kitchen Genius tiene fines
+        gastronómicos y humorísticos. Kitchen Genius no se hace responsable del
+        resultado de las recetas ni de los ingredientes introducidos.
+        Sugerencias: ideas de recetas con ingredientes de la nevera, recetas de
+        agradecimiento a alguien especial o una receta graciosa de caca para tu
+        amigo. Se recomienda seguir el sentido común.</small
+      >
     </footer>
   </section>
 </template>
@@ -219,24 +250,7 @@ import { defineComponent, ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 /* import CustomSelect from './CustomSelect.vue'
  */
-const stringOptions = [
-  "Agua",
-  "Tu carita bonita",
-  "Tu lindo trasero",
-  "Tomate",
-  "Anchoa",
-  "Lechuga",
-  "Manzana",
-  "Ron",
-  "Calamar",
-  "Cristales rotos",
-  "Tornillos",
-  "Cigarros",
-  "Barcelona",
-  "Entrecot",
-  "Pimienta",
-  "queso Roquefort",
-];
+const stringOptions = [];
 
 export default defineComponent({
   name: "MainLayout",
@@ -284,9 +298,9 @@ export default defineComponent({
       console.log(select.value.focus());
     }); */
     onMounted(() => {
-      if (!getIngredients.value.length) {
+      /*       if (!getIngredients.value.length) {
         store.dispatch("recipes/action_setIngredients", stringOptions);
-      }
+      } */
     });
     return {
       courseDiv,
@@ -306,6 +320,8 @@ export default defineComponent({
       getIngredients,
       test3: ref(test),
       filterOptions,
+      icon: ref(false),
+
       /*  options: ref(optionsOriginal), */
       handleUpdateInputValue(e) {
         this.inputValue = e;
@@ -313,7 +329,11 @@ export default defineComponent({
         /*         const inputValue = this.$refs.qSelect
       this.$refs.qSelect.add(inputValue, 'toggle') */
       },
-
+      deleteRecipe(recipe, index) {
+        console.log(recipe, index, getRecipes.value);
+        getRecipes.value.splice(index, 1);
+        store.dispatch("recipes/action_setRecipes2", getRecipes.value);
+      },
       deleteIngredient(ing) {
         let index = getIngredients.value.indexOf(ing);
         getIngredients.value.splice(index, 1);
@@ -486,7 +506,7 @@ export default defineComponent({
           this.response = JSON.parse(data.choices[0].text);
           store.dispatch("recipes/action_setRecipes", this.response);
         } catch (error) {
-          alert("Something Went Wrong try again");
+          alert("Perdona :( prueba otra vez");
           /*  this.requestAPI(); */
         }
         console.log(this.response);
